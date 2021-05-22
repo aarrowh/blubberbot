@@ -7,6 +7,7 @@ DEBUG = False
 
 
 def irc_print(msg, level='MSG'):
+    global DEBUG
 
     if level.upper() not in ['ERROR', 'DEBUG', 'INFO', 'MSG']:
         return
@@ -95,6 +96,8 @@ class BlubberBot():
 
 
 def main():
+    irc_print("DEBUG TEST", "DEBUG")
+    exit()
     bot = BlubberBot()
     bot.get_connection()
     bot.run()
