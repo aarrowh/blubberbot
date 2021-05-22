@@ -5,17 +5,17 @@ import argparse
 
 DEBUG = False
 
+
 def irc_print(msg, level='MSG'):
 
     if level.upper() not in ['ERROR', 'DEBUG', 'INFO', 'MSG']:
         return
 
-    #TODO this will be in a utils file later, and DEBUG will be maintained in a cfg obj
+    # TODO this will be in a utils file later, and DEBUG will be maintained in a cfg obj
     if level.upper() == 'DEBUG' and not DEBUG:
         return
 
     print(f"[{level.upper()}]\t{msg}")
-
 
 
 class BlubberBot():
@@ -55,22 +55,29 @@ class BlubberBot():
 
         # CONFIG
         RESP_TYPES = ["PRIVMSG"]
+        msg_type = msg.split()[1]
 
-        # msg should be a raw string here
-        msg = msg.split()
+        # TODO this whole thing needs to not be nasty - no way PONG currently works
+        # need to detect PING in the first part of message but the number of times
+        # I have already split this string hurts me
 
-        if msg[0] == "PING":
+        if msg_type == "PING":
             self.send_pong()
-
-        if msg[1] not in RESP_TYPES:
             return
 
-        user = msg[0][1:msg[0].find("!")]
-        msg_text = "".join(msg[3:])
-        msg_text = msg_text[1:]
-        real_msg = f"{user}: {msg_text}"
+        if msg_type not in RESP_TYPES:
+            return
 
-        irc_print(real_msg, "MSG")
+        f = msg.split(":", 2)
+        user = f[1][:f[1].find("!")]
+        msg_text = f[2].rstrip()
+
+        if msg_text[0] == "!":
+            irc_print("Command detected", "INFO")
+            if msg_text.split(" ")[0][1:].lower() == "test":
+                irc_print("TEST COMMAND CALLED", "INFO")
+                resp = f"{user} called the test command"
+                self.send_msg(resp)
 
     def send_msg(self, msg):
         if self.io_socket is None:
@@ -79,9 +86,10 @@ class BlubberBot():
 
         irc_msg = f"PRIVMSG #{self.channel} :{msg}\r\n".encode('utf-8')
         print(irc_msg)
-        self.io_socket.send(irc_msg)
+        self.io_socket.sendall(irc_msg)
 
     def send_pong(self):
+        irc_print("SENDING PONG", "INFO")
         irc_msg = "PONG :tmi.twitch.tv\r\n"
         self.io_socket.sendall(irc_msg)
 
