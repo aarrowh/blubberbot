@@ -1,0 +1,4 @@
+bin/
+cfg/config.json
+lib/
+pyvenv.cfg
