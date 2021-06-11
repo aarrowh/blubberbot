@@ -9,14 +9,10 @@ class Message():
 
         self.cfg = cfg
         self.raw_data = raw_msg
-        self.is_ping = False
-        self.is_server_message = False
         self.is_blubberbot = False
         self.message_type = self.get_message_type()
 
-        if self.is_ping:
-            return
-        elif self.is_server_message:
+        if self.message_type not in cfg.RESP_TYPES or self.message_type in cfg.SERV_MSGS:
             return
 
         self.user = self.get_user()
@@ -40,14 +36,17 @@ class Message():
 
     def get_message_type(self):
 
-        msg = self.raw_data.split(" ")
-        if msg[0] == "PING":
-            self.is_ping = True
-            return
-        elif msg[0] == ":tmi.twitch.tv" or "blubber_bot" in msg[0]:
-            self.is_server_message = True
-            return
-        return msg[1]
+        # TODO: We get random messages with a blank message - Figure out why, and fix it - 99% chance my fault.
+
+        try:
+            msg = self.raw_data.split(" ")
+            if msg[0] == "PING":
+                return "PING"
+            elif msg[0] == ":tmi.twitch.tv" or "blubber_bot" in msg[0]:
+                return "SRV"
+            return msg[1]
+        except IndexError:
+            return "SRV"
 
     def get_channel(self):
         # Could split on '#' and get channel name that way
