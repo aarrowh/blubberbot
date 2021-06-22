@@ -1,7 +1,5 @@
 import json
 
-from helix import Helix
-
 
 class Config():
 
@@ -18,8 +16,6 @@ class Config():
 
         self.RESP_TYPES = ["PRIVMSG"]
         self.SERV_MSGS = ["PING", "SRV"]
-
-        #self.helix = Helix(self)
 
     def load_secrets(self, filepath):
         with open(filepath, "r") as cfgFile:

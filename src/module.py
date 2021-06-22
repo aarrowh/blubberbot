@@ -1,4 +1,5 @@
 from config import Config
+from blubberbot import BlubberBot
 from message import Message
 
 '''
@@ -10,11 +11,14 @@ from message import Message
                 simple dictionary in fmt: {"command": function }
 
             Module name MUST only have the first character uppercase -- sorry.. I don't wanna implement anymore fancy fixes for that
+
+            all commands must
 '''
 class Module:
 
-    def __init__(self, cfg):
+    def __init__(self, ctx):
 
         self.CALLBACKS = {}
         self.COOLDOWNS = {}
-        self.cfg = cfg
+        self.ctx = ctx
+        self.cfg = ctx.cfg

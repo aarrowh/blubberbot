@@ -14,8 +14,7 @@ class Core(Module):
         words = msg.message.split(" ")
         homie = words[1]
 
-        resp = f"Checkout the homie {homie} at https://twitch.tv/{homie}!"
-        return resp
+        self.ctx.send_msg(f"Checkout the homie {homie} at https://twitch.tv/{homie}!")
 
     def boom(self, msg):
         pass

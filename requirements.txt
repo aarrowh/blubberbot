@@ -1,1 +1,2 @@
 twitchAPI
+requests

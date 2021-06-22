@@ -12,12 +12,10 @@ class Testmodule(Module):
                 "!bar": { "cooldown": 10, "lastcall": 0}}
 
     def foo(self, msg):
-        resp = f"Foo me {msg.user}?! No FOO YOU!"
-        return resp
+        self.ctx.send_msg(f"Foo me {msg.user}?! No FOO YOU!")
 
     def test(self, msg):
-        resp = f"{msg.user} called the FAKE command"
-        return resp
+        self.ctx.send_msg(f"{msg.user} called the FAKE command")
 
     def bar(self, msg):
         self.cfg.debug_print(f"BAR was called by {msg.user}")
