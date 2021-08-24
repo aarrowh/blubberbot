@@ -1,3 +1,5 @@
+import asyncio
+
 from config import Config
 from blubberbot import BlubberBot
 from message import Message

@@ -11,11 +11,11 @@ class Testmodule(Module):
                 "!test": { "cooldown": 10, "lastcall": 0}, 
                 "!bar": { "cooldown": 10, "lastcall": 0}}
 
-    def foo(self, msg):
-        self.ctx.send_msg(f"Foo me {msg.user}?! No FOO YOU!")
+    async def foo(self, msg):
+        await self.ctx.send_msg(f"Foo me {msg.user}?! No FOO YOU!")
 
-    def test(self, msg):
-        self.ctx.send_msg(f"{msg.user} called the FAKE command")
+    async def test(self, msg):
+        await self.ctx.send_msg(f"{msg.user} called the FAKE command")
 
-    def bar(self, msg):
-        self.cfg.debug_print(f"BAR was called by {msg.user}")
+    async def bar(self, msg):
+        await self.cfg.debug_print(f"BAR was called by {msg.user}")

@@ -14,6 +14,8 @@ class BlubberBot():
         self.server = self.cfg.server
         self.port = self.cfg.port
         self.io_socket = None
+        self.io_reader = None
+        self.io_writer = None
         self.secrets = self.cfg.secrets
         self.channel = self.cfg.channel
         self.CALLBACKS = []
@@ -23,6 +25,23 @@ class BlubberBot():
         self.MODULE_FILES = {}
         self.LAST_UPDATE = 0
 
+    async def get_async_connection(self):
+
+        self.io_reader, self.io_writer = await asyncio.open_connection(self.server, self.port)
+
+        self.io_writer.write(("PASS " + self.secrets["chat_secret"] + "\r\n").encode('utf-8'))
+        await self.io_writer.drain()
+        self.io_writer.write("NICK blubber_bot\r\n".encode('utf-8'))
+        await self.io_writer.drain()
+        if self.cfg.debug:
+            print("sleeping 5")
+            await asyncio.sleep(5)
+
+        self.io_writer.write("CAP REQ :twitch.tv/membership\r\n".encode('utf-8'))
+        await self.io_writer.drain()
+        self.io_writer.write(f"JOIN #{self.channel}\r\n".encode('utf-8'))
+        await self.io_writer.drain()
+
     def get_connection(self):
 
         self.io_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,7 +49,7 @@ class BlubberBot():
         self.io_socket.sendall(("PASS " + self.secrets["chat_secret"] + "\r\n").encode('utf-8'))
         self.io_socket.sendall("NICK blubber_bot\r\n".encode('utf-8'))
         if self.cfg.debug:
-            print("sleeping 10")
+            print("sleeping 5")
             sleep(10)
 
         self.io_socket.sendall("CAP REQ :twitch.tv/membership\r\n".encode('utf-8'))
@@ -39,13 +58,15 @@ class BlubberBot():
     async def run(self):
 
         await self.load_modules()
-        self.get_connection()
-        self.helix = Helix(self.cfg)
+        await self.get_async_connection()
+        # self.helix = Helix(self.cfg)
 
         while True:
-            msg = await self.receive_msg()
-
-            await self.parse_msg(msg)
+            try:
+                msg = await self.receive_msg()
+                await self.parse_msg(msg)
+            except asyncio.IncompleteReadError:
+                pass
 
             ''' can replace this code with async timers
             if self.get_epoch() - self.LAST_UPDATE >= 5:
@@ -54,7 +75,7 @@ class BlubberBot():
             '''
 
     async def receive_msg(self):
-        msg = await self.io_socket.recv(2048)
+        msg = await self.io_reader.readuntil()
         return msg.decode('utf-8')
 
     async def parse_msg(self, rawMsg):
@@ -81,21 +102,22 @@ class BlubberBot():
                 if (cur_time - module.COOLDOWNS[trigger]["lastcall"]) < module.COOLDOWNS[trigger]["cooldown"]:
                     break
                 module.COOLDOWNS[trigger]["lastcall"] = cur_time
-                module.CALLBACKS[trigger](msg)
+                await module.CALLBACKS[trigger](msg)
 
     async def send_msg(self, msg):
-        if self.io_socket is None:
+        if self.io_writer is None:
             print("IO socket is None")
             return
 
         irc_msg = f"PRIVMSG #{self.channel} :{msg}\r\n".encode('utf-8')
         self.cfg.debug_print(f"Sending: {irc_msg}", "DEBUG")
-        self.io_socket.sendall(irc_msg)
+        self.io_writer.write(irc_msg)
+        await self.io_writer.drain()
 
     async def send_pong(self):
         self.cfg.debug_print("SENDING PONG", "DEBUG")
         irc_msg = "PONG :tmi.twitch.tv\r\n".encode('utf-8')
-        self.io_socket.sendall(irc_msg)
+        await self.io_writer.write(irc_msg)
 
     async def load_modules(self):
 

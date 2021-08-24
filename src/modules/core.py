@@ -9,12 +9,12 @@ class Core(Module):
         self.CALLBACKS = {"!so": self.shoutout, "!shoutout": self.shoutout}
         self.COOLDOWNS = {"!so": {"cooldown": 5, "lastcall": 0}}
 
-    def shoutout(self, msg):
+    async def shoutout(self, msg):
 
         words = msg.message.split(" ")
         homie = words[1]
 
-        self.ctx.send_msg(f"Checkout the homie {homie} at https://twitch.tv/{homie}!")
+        await self.ctx.send_msg(f"Checkout the homie {homie} at https://twitch.tv/{homie}!")
 
-    def boom(self, msg):
+    async def boom(self, msg):
         pass
